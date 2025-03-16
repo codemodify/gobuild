@@ -4,7 +4,7 @@ const (
 	defaultGoBuildFile         = ".gobuild"
 	defaultGoBuildVersionFile  = ".gobuild-version"
 	defaultGoBuildBinaryFile   = ".gobuild-binary"
-	defaultGoBuildOutputFolder = ".gobuild-"
+	defaultGoBuildOutputFolder = ".gobuild"
 
 	defaultMinVersion = "1.0.0"
 )
@@ -12,6 +12,8 @@ const (
 var (
 	version = "1.0.0"
 
+	// go tool dist list
+	// https://go.dev/wiki/GoArm
 	defaultPlatforms = []string{
 		"linux/amd64",
 		"linux/arm/5",

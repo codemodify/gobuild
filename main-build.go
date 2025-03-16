@@ -7,26 +7,37 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
+)
+
+var (
+	goConventionsFolderLayouts = []string{
+		"pkg",
+	}
 )
 
 func build() {
 	cwd, err := os.Getwd()
 	exitIfErr(err)
 
-	productBinaryName := ""
-	productBinaryNameRaw, err := os.ReadFile(defaultGoBuildBinaryFile)
-	if err != nil {
-		productBinaryName = filepath.Base(cwd)
-	} else {
-		productBinaryName = strings.TrimSpace(string(productBinaryNameRaw))
-	}
-
 	productVersion := "1.0.0"
 	productVersionRaw, err := os.ReadFile(defaultGoBuildVersionFile)
 	if err == nil {
 		productVersion = strings.TrimSpace(string(productVersionRaw))
 	}
+
+	productBinaryName := ""
+	productBinaryNameRaw, err := os.ReadFile(defaultGoBuildBinaryFile)
+	if err != nil {
+		productBinaryName = filepath.Base(cwd)                              // if file name not set then use folder name
+		if slices.Contains(goConventionsFolderLayouts, productBinaryName) { // account for cases when code is in "pkg" type folders
+			productBinaryName = filepath.Base(filepath.Dir(cwd))
+		}
+	} else {
+		productBinaryName = strings.TrimSpace(string(productBinaryNameRaw))
+	}
+	productBinaryName += "_v" + productVersion
 
 	productBuildConfig := Config{
 		Platforms: defaultPlatforms,
@@ -37,7 +48,7 @@ func build() {
 		exitIfErr(err)
 	}
 
-	productOutputFolder := filepath.Join(cwd, defaultGoBuildOutputFolder) + productVersion
+	productOutputFolder := filepath.Join(cwd, defaultGoBuildOutputFolder)
 
 	log.Println()
 	log.Printf("build  : %s @ %s\n", productBinaryName, productVersion)
@@ -97,7 +108,7 @@ func build() {
 			productExt = osToExt[productOS]
 		}
 
-		outputFile := filepath.Join(productOutputFolder, fmt.Sprintf("%s.%s-%s%s",
+		outputFile := filepath.Join(productOutputFolder, fmt.Sprintf("%s_%s-%s%s",
 			productBinaryName,
 			productArchWithDetails,
 			productOSLabel,
