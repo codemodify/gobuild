@@ -1,61 +1,26 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"slices"
 	"strings"
 )
 
-var (
-	goConventionsFolderLayouts = []string{
-		"pkg",
-	}
-)
-
 func build() {
-	cwd, err := os.Getwd()
-	exitIfErr(err)
-
-	productVersion := "1.0.0"
-	productVersionRaw, err := os.ReadFile(defaultGoBuildVersionFile)
-	if err == nil {
-		productVersion = strings.TrimSpace(string(productVersionRaw))
-	}
-
-	productBinaryName := ""
-	productBinaryNameRaw, err := os.ReadFile(defaultGoBuildBinaryFile)
-	if err != nil {
-		productBinaryName = filepath.Base(cwd)                              // if file name not set then use folder name
-		if slices.Contains(goConventionsFolderLayouts, productBinaryName) { // account for cases when code is in "pkg" type folders
-			productBinaryName = filepath.Base(filepath.Dir(cwd))
-		}
-	} else {
-		productBinaryName = strings.TrimSpace(string(productBinaryNameRaw))
-	}
-	productBinaryName += "_v" + productVersion
-
-	productBuildConfig := Config{
-		Platforms: defaultPlatforms,
-	}
-	productBuildConfigRaw, err := os.ReadFile(defaultGoBuildFile)
-	if err == nil {
-		err = json.Unmarshal(productBuildConfigRaw, &productBuildConfig)
-		exitIfErr(err)
-	}
+	buildConfig, cwd := genBuildConfig()
 
 	productOutputFolder := filepath.Join(cwd, defaultGoBuildOutputFolder)
 
 	log.Println()
-	log.Printf("build  : %s @ %s\n", productBinaryName, productVersion)
-	log.Printf("output : %s\n", productOutputFolder)
-	log.Printf("config : %s\n", productBuildConfig.Platforms)
+	log.Printf("output   : %s\n", productOutputFolder)
+	log.Printf("config   : %v\n", buildConfig.Config)
+	log.Printf("build    : %s @ %s\n", buildConfig.Binary, buildConfig.Version)
 
-	err = os.RemoveAll(productOutputFolder)
+	err := os.RemoveAll(productOutputFolder)
 	exitIfErr(err)
 
 	err = os.MkdirAll(productOutputFolder, os.FileMode(0755))
@@ -66,10 +31,10 @@ func build() {
 		debugFlags = "-tags debug"
 	}
 
-	var ldFlags = fmt.Sprintf("-w -s -X main.version=\"%s\"", productVersion)
+	var ldFlags = fmt.Sprintf("-s -w -X main.version=\"%s\"", buildConfig.Version)
 
-	// format: $binary.$arch-$details-$os.$ext
-	for _, platform := range productBuildConfig.Platforms {
+	// format: $binary_$version-$os.$arch-$details.$ext
+	for _, platform := range buildConfig.Config.Platforms {
 		// get OS + ARCH
 		productOSAndArch := strings.Split(platform, "/")
 
@@ -108,14 +73,15 @@ func build() {
 			productExt = osToExt[productOS]
 		}
 
+		productBinaryName := buildConfig.Binary + "_v" + buildConfig.Version
 		outputFile := filepath.Join(productOutputFolder, fmt.Sprintf("%s_%s-%s%s",
 			productBinaryName,
-			productArchWithDetails,
 			productOSLabel,
+			productArchWithDetails,
 			productExt,
 		))
 
-		log.Printf("\t-> %-55s \n", filepath.Base(outputFile))
+		log.Printf("        -> %-55s \n", filepath.Base(outputFile))
 
 		cmdToRunEnv := os.Environ() // copy current env
 
@@ -137,10 +103,41 @@ func build() {
 		cmdToRun.Args = append(cmdToRun.Args, "-o", outputFile)
 		cmdToRun.Args = append(cmdToRun.Args, "./")
 		cmdToRun.Env = cmdToRunEnv
-		cmdToRun.Dir = cwd
+		cmdToRun.Dir = buildConfig.GoModFolder
 		cmdToRun.Stderr = os.Stderr
-		cmdToRun.Stderr = os.Stdout
+		cmdToRun.Stdout = os.Stdout
 		err = cmdToRun.Run()
 		exitIfErr(err)
+	}
+
+	// run compressor
+	if buildConfig.Config.Compress {
+		if _, err := exec.LookPath(buildConfig.Config.Compressor); err == nil {
+			filepath.WalkDir(productOutputFolder, func(path string, d fs.DirEntry, err error) error {
+				if !isFile(path) {
+					return nil
+				}
+
+				preSize := getFileSize(path)
+				preSizeKB := preSize / 1024
+				preSizeMB := preSize / (1024 * 1024)
+
+				cmdToRun := exec.Command(buildConfig.Config.Compressor)
+				if len(buildConfig.Config.CompressorFlags) > 0 {
+					cmdToRun.Args = append(cmdToRun.Args, buildConfig.Config.CompressorFlags...)
+				}
+				cmdToRun.Args = append(cmdToRun.Args, path)
+
+				_ = cmdToRun.Run()
+
+				postSize := getFileSize(path)
+				postSizeKB := postSize / 1024
+				postSizeMB := postSize / (1024 * 1024)
+
+				log.Printf("compress : %s %d/%dK/%dMB -> %d/%dK/%dMB \n", d.Name(), preSize, preSizeKB, preSizeMB, postSize, postSizeKB, postSizeMB)
+
+				return nil
+			})
+		}
 	}
 }

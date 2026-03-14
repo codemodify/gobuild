@@ -1,16 +1,18 @@
 package main
 
+import "runtime"
+
 const (
-	defaultGoBuildFile         = ".gobuild"
+	defaultMinVersion = "1.0.0"
+
+	defaultGoBuildOutputFolder = ".gobuild"
+	defaultGoBuildConfig       = ".gobuild-config"
 	defaultGoBuildVersionFile  = ".gobuild-version"
 	defaultGoBuildBinaryFile   = ".gobuild-binary"
-	defaultGoBuildOutputFolder = ".gobuild"
-
-	defaultMinVersion = "1.0.0"
 )
 
 var (
-	version = "1.0.0"
+	version = "1.0.1"
 
 	// go tool dist list
 	// https://go.dev/wiki/GoArm
@@ -48,5 +50,29 @@ var (
 )
 
 type Config struct {
-	Platforms []string `json:"platforms,omitempty"`
+	Compress        bool     `json:"compress,omitempty"`
+	Compressor      string   `json:"compressor,omitempty"`
+	CompressorFlags []string `json:"compressorFlags,omitempty"`
+	Platforms       []string `json:"platforms,omitempty"`
+}
+
+func NewConfig() Config {
+	config := Config{
+		Compress:   true,
+		Compressor: "upx",
+		Platforms:  defaultPlatforms,
+	}
+
+	if runtime.GOOS == "windows" {
+		config.Compressor += ".exe"
+	}
+
+	return config
+}
+
+type BuildConfig struct {
+	Binary      string
+	Config      Config
+	Version     string
+	GoModFolder string
 }

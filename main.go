@@ -10,7 +10,7 @@ func main() {
 		switch os.Args[1] {
 		case "gen":
 			gen()
-		case "ver":
+		case "version":
 			log.Println("version: ", version)
 		default:
 			log.Println("unknown command")
@@ -25,6 +25,5 @@ func main() {
 func exitIfErr(err error) {
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
 	}
 }
