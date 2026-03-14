@@ -7,8 +7,8 @@
 # build
 - `cd MY-GO-PROJECT`
 - `gobuild`
-	> it understands folder layout where the source is in PKG folder layout type
-	> or if you run it from PKG folder
+	- it understands folder layout where the source is in PKG folder layout type
+	- or if you run it from PKG folder
 
 # customize
 - `cd MY-GO-PROJECT`
@@ -17,4 +17,3 @@
 	- generates `.gobuild-version` file with the version to set (`-X main.version=` for `-ldflags`)
 	- generates `.gobuild-binary`  file with the binary file name
 	- these files can be added to the source control for custom builds
-s
