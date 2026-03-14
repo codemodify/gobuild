@@ -5,8 +5,17 @@
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>gobuild</title>
+
+	<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@200;300;400;600;700;900&display=swap" rel="stylesheet" />
+
+	<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200;300;400;600;700;900&display=swap" rel="stylesheet" />
+
 	<link rel="stylesheet" type="text/css" href="asciinema-player.css" />
 	<style>
+		body {
+			font-family: 'Titillium Web', sans-serif;
+		}
+
 		*, *::before, *::after {
 			box-sizing: border-box;
 			margin: 0;
@@ -14,7 +23,6 @@
 		}
 
 		body {
-			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 			background: #0d1117;
 			color: #e6edf3;
 			min-height: 100vh;
@@ -91,14 +99,24 @@
 		}
 
 		/* ── Demo panel ── */
-		.display {
+		.display-right {
 			flex: 1;
 			min-width: 0;
 			perspective: 1500px;
 		}
 
-		.display > .caption {
-			transform: rotateY(-25deg);
+		.display-right > .caption {
+			transform: rotateY(-30deg);
+		}
+
+		.display-left {
+			flex: 1;
+			min-width: 0;
+			perspective: 1500px;
+		}
+
+		.display-left > .caption {
+			transform: rotateY(30deg);
 		}
 
 		.caption {
@@ -143,7 +161,11 @@
 				flex-direction: column;
 			}
 
-			.display > .caption {
+			.display-right > .caption {
+				transform: none;
+			}
+
+			.display-left > .caption {
 				transform: none;
 			}
 
@@ -158,29 +180,44 @@
 	<section class="hero">
 		<div class="asides">
 			<div class="hero-text">
-				<h1>Build Go binaries,<br>the simple way.</h1>
-				<p>
-					<code style="font-family:monospace;color:#58a6ff;">gobuild</code> cross-compiles your Go project
-					for every platform in one command &mdash; no Docker, no fuss.
+				<h2>build Go binaries in one shot</h2>
+				<span style="font-family: 'JetBrains Mono'; color:#00ff00;">gobuild</span> cross-compiles your Go project for every platform in one command &mdash; no deps, no Docker, no fuss.
 				</p>
-				<div class="action-buttons">
-					<a class="btn btn-primary" href="https://github.com/codemodify/gobuild">Get started</a>
-					<a class="btn btn-secondary" href="https://github.com/codemodify/gobuild#readme">Documentation</a>
+			</div>
+
+			<div class="display-right">
+				<div class="caption">
+					<p class="caption-text">demo</p>
+					<div id="demo"></div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="hero">
+		<div class="asides">
+			<div class="display-left">
+				<div class="caption">
+					<p class="caption-text">install</p>
+					<div id="install"></div>
 				</div>
 			</div>
 
-			<div class="display">
-				<div class="caption">
-					<div id="demo"></div>
-					<p class="caption-text">Watch gobuild cross-compile a project in seconds.</p>
-				</div>
+			<div class="hero-text">
+				<h2>easy setup</h2>
 			</div>
+
 		</div>
 	</section>
 
 	<script src="asciinema-player.min.js"></script>
 	<script>
 		AsciinemaPlayer.create('demo.cast', document.getElementById('demo'), {
+			preload: true,
+			autoPlay: true,
+			controls: true
+		});
+		AsciinemaPlayer.create('install.cast', document.getElementById('install'), {
 			preload: true,
 			autoPlay: true,
 			controls: true
