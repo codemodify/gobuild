@@ -56,6 +56,23 @@ func gen() {
 	log.Printf("gen: %s\n", goBuildVersionFile)
 }
 
+func genRM() {
+	cwd, err := os.Getwd()
+	exitIfErr(err)
+
+	// binary
+	goBuildBinaryFile := filepath.Join(cwd, defaultGoBuildBinaryFile)
+	os.Remove(goBuildBinaryFile)
+
+	// config
+	goBuildConfigFile := filepath.Join(cwd, defaultGoBuildConfig)
+	os.Remove(goBuildConfigFile)
+
+	// version
+	goBuildVersionFile := filepath.Join(cwd, defaultGoBuildVersionFile)
+	os.Remove(goBuildVersionFile)
+}
+
 func genBuildConfig() (BuildConfig, string) {
 	cwd, err := os.Getwd()
 	exitIfErr(err)
@@ -98,6 +115,7 @@ func findGoModFolder(cwd string) (string, error) {
 	foldersToCheck := []string{
 		cwd,
 		filepath.Join(cwd, "pkg"),
+		filepath.Join(cwd, "src"),
 	}
 
 	for _, folder := range foldersToCheck {
