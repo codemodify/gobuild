@@ -25,10 +25,10 @@ func main() {
 		default:
 			fmt.Println("usage: ", os.Args[0], "[COMMAND], no COMMAND builds it")
 			fmt.Println("COMMAND is one of")
-			fmt.Println("\tgen")
-			fmt.Println("\tgen-rm")
-			fmt.Println("\tclean")
-			fmt.Println("\tversion")
+			fmt.Println("\tgen - generate config files")
+			fmt.Println("\tgen-rm - remove generated config files")
+			fmt.Println("\tclean - clean the build")
+			fmt.Println("\tversion - print tool version")
 			os.Exit(1)
 		}
 
