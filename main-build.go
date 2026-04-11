@@ -44,7 +44,10 @@ func build() {
 		target, err := parsePlatform(platform)
 		exitIfErr(err)
 
-		productBinaryName := buildConfig.Binary + "_v" + buildConfig.Version
+		productBinaryName := buildConfig.Binary
+		if buildConfig.Config.VersionInFilename == nil || *buildConfig.Config.VersionInFilename {
+			productBinaryName += "_v" + buildConfig.Version
+		}
 		outputFile := filepath.Join(productOutputFolder, fmt.Sprintf("%s_%s-%s%s",
 			productBinaryName,
 			target.productOSLabel,

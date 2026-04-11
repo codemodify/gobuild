@@ -50,17 +50,20 @@ var (
 )
 
 type Config struct {
-	Compress        bool     `json:"compress,omitempty"`
-	Compressor      string   `json:"compressor,omitempty"`
-	CompressorFlags []string `json:"compressorFlags,omitempty"`
-	Platforms       []string `json:"platforms,omitempty"`
+	Compress          bool     `json:"compress,omitempty"`
+	Compressor        string   `json:"compressor,omitempty"`
+	CompressorFlags   []string `json:"compressorFlags,omitempty"`
+	Platforms         []string `json:"platforms,omitempty"`
+	VersionInFilename *bool    `json:"versionInFilename,omitempty"`
 }
 
 func NewConfig() Config {
+	versionInFilename := true
 	config := Config{
-		Compress:   true,
-		Compressor: "upx",
-		Platforms:  defaultPlatforms,
+		Compress:          true,
+		Compressor:        "upx",
+		Platforms:         defaultPlatforms,
+		VersionInFilename: &versionInFilename,
 	}
 
 	if runtime.GOOS == "windows" {
