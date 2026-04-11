@@ -37,7 +37,7 @@ func build() {
 	err := os.MkdirAll(productOutputFolder, os.FileMode(0755))
 	exitIfErr(err)
 
-	var ldFlags = fmt.Sprintf("-s -w -X main.version=\"%s\"", buildConfig.Version)
+	var ldFlags = fmt.Sprintf("-s -w -X main.version=%s", buildConfig.Version)
 
 	// format: $binary_$version-$os.$arch-$details.$ext
 	for _, platform := range buildConfig.Config.Platforms {
